@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SAA Employee Portal
 
-## Getting Started
+A Next.js employee portal application that allows employees to login and view their profile details.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Authentication**: Secure login with JWT tokens
+- **Profile Viewing**: Complete employee profile with all details
+- **Mobile-First Design**: Responsive design optimized for mobile devices
+- **Auth Guard**: Protected routes with automatic redirects
+- **Type Safety**: Full TypeScript support with Strapi schema types
+
+## Setup
+
+1. **Install dependencies**:
+
+    ```bash
+    npm install
+    ```
+
+2. **Environment Configuration**:
+   The app is configured to connect to the backend at `http://127.0.0.1:5000` by default.
+   You can modify this in `.env.local`:
+
+    ```
+    NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:5000
+    ```
+
+3. **Start the development server**:
+
+    ```bash
+    npm run dev
+    ```
+
+4. **Open your browser**:
+   Navigate to `http://localhost:3000`
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── login/page.tsx          # Login page
+│   ├── profile/page.tsx        # Profile page
+│   ├── layout.tsx              # Root layout with AuthProvider
+│   └── page.tsx                # Home page (redirects based on auth)
+├── contexts/
+│   └── AuthContext.tsx         # Authentication context and hooks
+├── types/
+│   └── index.ts                # TypeScript types based on Strapi schema
+└── middleware.ts               # Auth guard middleware
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## API Integration
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The app integrates with the SAA backend API:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Login**: `POST /api/v1/user/login`
+- **Profile**: `GET /api/v1/user/me`
 
-## Learn More
+## Authentication Flow
 
-To learn more about Next.js, take a look at the following resources:
+1. User visits the app → redirected to `/login` if not authenticated
+2. User logs in → JWT token stored in localStorage
+3. User redirected to `/profile` → displays complete employee information
+4. User can logout → token cleared and redirected to login
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Mobile-First Design
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The application is designed mobile-first with:
 
-## Deploy on Vercel
+- Responsive grid layouts
+- Touch-friendly buttons and inputs
+- Optimized typography for mobile screens
+- Progressive enhancement for larger screens
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js 15** with App Router
+- **React 19**
+- **TypeScript**
+- **Tailwind CSS 4**
+- **Custom authentication context**

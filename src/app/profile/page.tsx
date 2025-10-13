@@ -1,0 +1,574 @@
+'use client';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { StrapiMedia } from '@/types';
+
+export default function ProfilePage() {
+    const { user, logout, isLoading, isAuthenticated } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [isAuthenticated, isLoading, router]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <svg
+                        className="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                        ></circle>
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                    <p className="text-gray-600">Loading your profile...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return null;
+    }
+
+    const handleLogout = () => {
+        logout();
+        router.push('/login');
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
+
+    const DocumentCard = ({ document }: { document: StrapiMedia }) => (
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                        </svg>
+                    </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{document.name}</p>
+                    <p className="text-sm text-gray-500">
+                        Uploaded {formatDate(document.createdAt)}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-white shadow-sm border-b border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center py-4">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">Employee Portal</h1>
+                            <p className="text-sm text-gray-600">Welcome back, {user.fullname}</p>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            <svg
+                                className="w-4 h-4 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                />
+                            </svg>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Personal Information */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Basic Info */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                Personal Information
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Full Name
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">{user.fullname}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Email
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">{user.email}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Personal Email
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.email_personal || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Contact
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.contact || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Emergency Contact
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.contact_emergency || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Date of Joining
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.date_joining
+                                            ? formatDate(user.date_joining)
+                                            : 'Not provided'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Address Information */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                Address Information
+                            </h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Communication Address
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.address_communication || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Permanent Address
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.address_permanent || 'Not provided'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Employment Details */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                Employment Details
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Designation
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.designation || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        PAN Number
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.number_pan || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        ESI Number
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.number_esi || 'Not provided'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Education Details */}
+                        {user.details_education && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Education Details
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Highest Qualification
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.highest_qualification}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Institution
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.institution_name}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Location
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.location}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Degree
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.degree}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Grade
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.grade}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Previous Employment */}
+                        {user.details_previous_employment && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Previous Employment
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Company
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_previous_employment.company_name}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Designation
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_previous_employment.designation}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Start Date
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {formatDate(
+                                                user.details_previous_employment.date_start
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            End Date
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {formatDate(user.details_previous_employment.date_end)}
+                                        </p>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Location
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_previous_employment.location}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Bank Details */}
+                        {user.details_bank && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Bank Details
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Account Holder Name
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_bank.name_account}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Account Number
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_bank.account_number}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            IFSC Code
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_bank.ifsc_code}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Branch
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_bank.branch}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* PF Details */}
+                        {user.details_pf && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    PF Details
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Aadhar Name
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_pf.name_aadhar}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            UAN Number
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_pf.number_uan}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            PF Number
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_pf.number_pf}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Contract Details */}
+                        {user.contract_details && user.contract_details.length > 0 && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Contract Details
+                                </h2>
+                                <div className="space-y-4">
+                                    {user.contract_details.map((contract, index) => (
+                                        <div
+                                            key={index}
+                                            className="border border-gray-200 rounded-lg p-4"
+                                        >
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700">
+                                                        Type
+                                                    </label>
+                                                    <p className="mt-1 text-sm text-gray-900 capitalize">
+                                                        {contract.type.replace('_', ' ')}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700">
+                                                        Start Date
+                                                    </label>
+                                                    <p className="mt-1 text-sm text-gray-900">
+                                                        {formatDate(contract.date_start)}
+                                                    </p>
+                                                </div>
+                                                {contract.date_end && (
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            End Date
+                                                        </label>
+                                                        <p className="mt-1 text-sm text-gray-900">
+                                                            {formatDate(contract.date_end)}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                                {contract.__component ===
+                                                    'user.employee-client-staffing' && (
+                                                    <>
+                                                        {contract.duration && (
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700">
+                                                                    Duration
+                                                                </label>
+                                                                <p className="mt-1 text-sm text-gray-900">
+                                                                    {contract.duration}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        {contract.deputation_location && (
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700">
+                                                                    Deputation Location
+                                                                </label>
+                                                                <p className="mt-1 text-sm text-gray-900">
+                                                                    {contract.deputation_location}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        {contract.deputation_client && (
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700">
+                                                                    Deputation Client
+                                                                </label>
+                                                                <p className="mt-1 text-sm text-gray-900">
+                                                                    {contract.deputation_client}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className="space-y-6">
+                        {/* Documents */}
+                        {user.documents && user.documents.length > 0 && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Documents
+                                </h2>
+                                <div className="space-y-3">
+                                    {user.documents.map((document) => (
+                                        <DocumentCard key={document.id} document={document} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Account Status */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                Account Status
+                            </h2>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-700">
+                                        Status
+                                    </span>
+                                    <span
+                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            user.blocked
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-green-100 text-green-800'
+                                        }`}
+                                    >
+                                        {user.blocked ? 'Blocked' : 'Active'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-700">
+                                        Email Verified
+                                    </span>
+                                    <span
+                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            user.confirmed
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                        }`}
+                                    >
+                                        {user.confirmed ? 'Verified' : 'Pending'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium text-gray-700">
+                                        Member Since
+                                    </span>
+                                    <span className="text-sm text-gray-900">
+                                        {formatDate(user.createdAt)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
