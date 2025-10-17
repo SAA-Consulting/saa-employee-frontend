@@ -3,7 +3,8 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { StrapiMedia } from '@/types';
+import { StrapiMedia, Payslip } from '@/types';
+import { payslipsApi } from '@/utils/payslips';
 
 // Constants
 const STRAPI_BASE_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
@@ -115,8 +116,80 @@ const DocumentCard = ({ document }: { document: StrapiMedia }) => {
     );
 };
 
+const PayslipCard = ({ payslip, onDownload }: { payslip: Payslip; onDownload: (payslip: Payslip) => void }) => {
+    const formatFileSize = (bytes: number) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    const formatDate = (timestamp: number) => {
+        return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
+    };
+
+    const handlePayslipClick = () => {
+        onDownload(payslip);
+    };
+
+    return (
+        <div
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:bg-gray-50 hover:border-green-300 transition-colors duration-200"
+            onClick={handlePayslipClick}
+        >
+            <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg
+                            className="w-5 h-5 text-green-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                        </svg>
+                    </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                        {payslip.month_name} {payslip.year}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                        {formatFileSize(payslip.file_size)} • {formatDate(payslip.modified_at)}
+                    </p>
+                </div>
+                <div className="flex-shrink-0">
+                    <svg
+                        className="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function ProfilePage() {
-    const { user, logout, isLoading, isAuthenticated } = useAuth();
+    const { user, logout, isLoading, isAuthenticated, token } = useAuth();
     const router = useRouter();
     
     // State for collapsible sections
@@ -124,12 +197,58 @@ export default function ProfilePage() {
     const [isContractOpen, setIsContractOpen] = useState(false);
     const [isEducationOpen, setIsEducationOpen] = useState(false);
     const [isPreviousEmploymentOpen, setIsPreviousEmploymentOpen] = useState(false);
+    
+    // State for payslips
+    const [payslips, setPayslips] = useState<Payslip[]>([]);
+    const [payslipsLoading, setPayslipsLoading] = useState(false);
+    const [payslipsError, setPayslipsError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
             router.push('/login');
         }
     }, [isAuthenticated, isLoading, router]);
+
+    // Fetch payslips when user is authenticated
+    useEffect(() => {
+        if (isAuthenticated && token && user) {
+            fetchPayslips();
+        }
+    }, [isAuthenticated, token, user]);
+
+    const fetchPayslips = async () => {
+        if (!token) return;
+        
+        setPayslipsLoading(true);
+        setPayslipsError(null);
+        
+        try {
+            const response = await payslipsApi.getPayslipsList(token);
+            setPayslips(response.data.payslips);
+        } catch (error) {
+            console.error('Error fetching payslips:', error);
+            setPayslipsError('Failed to load payslips');
+        } finally {
+            setPayslipsLoading(false);
+        }
+    };
+
+    const handlePayslipDownload = async (payslip: Payslip) => {
+        if (!token || !user) return;
+        
+        try {
+            await payslipsApi.downloadAndSavePayslip(token, {
+                filename: payslip.filename,
+                year: payslip.year,
+                month_id: payslip.month_id,
+                month_name: payslip.month_name,
+                employee_id: payslip.employee_id,
+            });
+        } catch (error) {
+            console.error('Error downloading payslip:', error);
+            // You could add a toast notification here
+        }
+    };
 
     if (isLoading) {
         return (
@@ -600,13 +719,82 @@ export default function ProfilePage() {
                                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
                                     Documents
                                 </h2>
-                                <div className="space-y-3">
+                                <div className={`space-y-3 ${user.documents.length > 6 ? 'max-h-96 overflow-y-auto pr-2' : ''}`}>
                                     {user.documents.map((document) => (
                                         <DocumentCard key={document.id} document={document} />
                                     ))}
                                 </div>
                             </div>
                         )}
+
+                        {/* Payslips */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                Payslips
+                            </h2>
+                            {payslipsLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <svg
+                                        className="animate-spin h-6 w-6 text-green-600"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                    <span className="ml-2 text-sm text-gray-600">Loading payslips...</span>
+                                </div>
+                            ) : payslipsError ? (
+                                <div className="text-center py-8">
+                                    <p className="text-sm text-red-600 mb-2">{payslipsError}</p>
+                                    <button
+                                        onClick={fetchPayslips}
+                                        className="text-sm text-green-600 hover:text-green-700 underline"
+                                    >
+                                        Try again
+                                    </button>
+                                </div>
+                            ) : payslips.length > 0 ? (
+                                <div className={`space-y-3 ${payslips.length > 6 ? 'max-h-96 overflow-y-auto pr-2' : ''}`}>
+                                    {payslips.map((payslip) => (
+                                        <PayslipCard 
+                                            key={`${payslip.year}-${payslip.month_id}`} 
+                                            payslip={payslip} 
+                                            onDownload={handlePayslipDownload}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <svg
+                                        className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1}
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
+                                    </svg>
+                                    <p className="text-sm text-gray-500">No payslips available</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

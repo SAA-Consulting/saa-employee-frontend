@@ -149,3 +149,33 @@ export interface ApiError {
     message: string;
     error?: any;
 }
+
+// Payslip Types
+export interface Payslip {
+    filename: string;
+    file_path: string;
+    employee_id: string;
+    year: number;
+    month_id: number;
+    month_name: string;
+    file_size: number;
+    created_at: number;
+    modified_at: number;
+}
+
+export interface PayslipsListResponse {
+    success: boolean;
+    data: {
+        payslips: Payslip[];
+        employee_id: string;
+    };
+    message: string;
+}
+
+export interface PayslipDownloadRequest {
+    filename: string;
+    year: number;
+    month_id: number;
+    month_name: string;
+    employee_id: string;
+}
