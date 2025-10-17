@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: 'SAA Employee Portal',
+    title: 'Employee Portal',
     description: 'Employee portal for SAA - view your profile and details',
 };
 

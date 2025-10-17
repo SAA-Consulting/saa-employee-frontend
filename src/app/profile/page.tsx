@@ -127,58 +127,33 @@ export default function ProfilePage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Personal Information */}
+                    {/* Basic Info  */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Basic Info */}
+                        {/* Personal Information */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Personal Information
+                                Personal Details
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-400">
                                         Full Name
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">{user.fullname}</p>
                                 </div>
+                                <div></div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-400">
                                         Email
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">{user.email}</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-400">
                                         Personal Email
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
                                         {user.email_personal || 'Not provided'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Contact
-                                    </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.contact || 'Not provided'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Emergency Contact
-                                    </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.contact_emergency || 'Not provided'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Date of Joining
-                                    </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.date_joining
-                                            ? formatDate(user.date_joining)
-                                            : 'Not provided'}
                                     </p>
                                 </div>
                             </div>
@@ -187,11 +162,11 @@ export default function ProfilePage() {
                         {/* Address Information */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Address Information
+                                Address & Contact Details
                             </h2>
-                            <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-400">
                                         Communication Address
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
@@ -199,11 +174,27 @@ export default function ProfilePage() {
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-400">
                                         Permanent Address
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
                                         {user.address_permanent || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Contact
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.contact || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Emergency Contact
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.contact_emergency || 'Not provided'}
                                     </p>
                                 </div>
                             </div>
@@ -216,7 +207,7 @@ export default function ProfilePage() {
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-400">
                                         Designation
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
@@ -224,7 +215,13 @@ export default function ProfilePage() {
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Employee ID
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">{user.username}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
                                         PAN Number
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
@@ -232,119 +229,25 @@ export default function ProfilePage() {
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-400">
                                         ESI Number
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
                                         {user.number_esi || 'Not provided'}
                                     </p>
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Date of Joining
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.date_joining
+                                            ? formatDate(user.date_joining)
+                                            : 'Not provided'}
+                                    </p>
+                                </div>
                             </div>
                         </div>
-
-                        {/* Education Details */}
-                        {user.details_education && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Education Details
-                                </h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Highest Qualification
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.highest_qualification}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Institution
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.institution_name}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Location
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.location}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Degree
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.degree}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Grade
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.grade}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Previous Employment */}
-                        {user.details_previous_employment && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Previous Employment
-                                </h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Company
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_previous_employment.company_name}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Designation
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_previous_employment.designation}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Start Date
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {formatDate(
-                                                user.details_previous_employment.date_start
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            End Date
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {formatDate(user.details_previous_employment.date_end)}
-                                        </p>
-                                    </div>
-                                    <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Location
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_previous_employment.location}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
 
                         {/* Bank Details */}
                         {user.details_bank && (
@@ -354,7 +257,7 @@ export default function ProfilePage() {
                                 </h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-400">
                                             Account Holder Name
                                         </label>
                                         <p className="mt-1 text-sm text-gray-900">
@@ -362,7 +265,7 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-400">
                                             Account Number
                                         </label>
                                         <p className="mt-1 text-sm text-gray-900">
@@ -370,7 +273,7 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-400">
                                             IFSC Code
                                         </label>
                                         <p className="mt-1 text-sm text-gray-900">
@@ -378,7 +281,7 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-400">
                                             Branch
                                         </label>
                                         <p className="mt-1 text-sm text-gray-900">
@@ -397,7 +300,7 @@ export default function ProfilePage() {
                                 </h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-400">
                                             Aadhar Name
                                         </label>
                                         <p className="mt-1 text-sm text-gray-900">
@@ -405,7 +308,7 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-400">
                                             UAN Number
                                         </label>
                                         <p className="mt-1 text-sm text-gray-900">
@@ -413,7 +316,7 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-400">
                                             PF Number
                                         </label>
                                         <p className="mt-1 text-sm text-gray-900">
@@ -426,7 +329,7 @@ export default function ProfilePage() {
 
                         {/* Contract Details */}
                         {user.contract_details && user.contract_details.length > 0 && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div className="bg-white rounded-lg shadow-sm p-6">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
                                     Contract Details
                                 </h2>
@@ -434,11 +337,11 @@ export default function ProfilePage() {
                                     {user.contract_details.map((contract, index) => (
                                         <div
                                             key={index}
-                                            className="border border-gray-200 rounded-lg p-4"
+                                            className=""
                                         >
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700">
+                                                    <label className="block text-sm font-medium text-gray-400">
                                                         Type
                                                     </label>
                                                     <p className="mt-1 text-sm text-gray-900 capitalize">
@@ -446,7 +349,7 @@ export default function ProfilePage() {
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700">
+                                                    <label className="block text-sm font-medium text-gray-400">
                                                         Start Date
                                                     </label>
                                                     <p className="mt-1 text-sm text-gray-900">
@@ -455,7 +358,7 @@ export default function ProfilePage() {
                                                 </div>
                                                 {contract.date_end && (
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700">
+                                                        <label className="block text-sm font-medium text-gray-400">
                                                             End Date
                                                         </label>
                                                         <p className="mt-1 text-sm text-gray-900">
@@ -468,7 +371,7 @@ export default function ProfilePage() {
                                                     <>
                                                         {contract.duration && (
                                                             <div>
-                                                                <label className="block text-sm font-medium text-gray-700">
+                                                                <label className="block text-sm font-medium text-gray-400">
                                                                     Duration
                                                                 </label>
                                                                 <p className="mt-1 text-sm text-gray-900">
@@ -478,7 +381,7 @@ export default function ProfilePage() {
                                                         )}
                                                         {contract.deputation_location && (
                                                             <div>
-                                                                <label className="block text-sm font-medium text-gray-700">
+                                                                <label className="block text-sm font-medium text-gray-400">
                                                                     Deputation Location
                                                                 </label>
                                                                 <p className="mt-1 text-sm text-gray-900">
@@ -488,7 +391,7 @@ export default function ProfilePage() {
                                                         )}
                                                         {contract.deputation_client && (
                                                             <div>
-                                                                <label className="block text-sm font-medium text-gray-700">
+                                                                <label className="block text-sm font-medium text-gray-400">
                                                                     Deputation Client
                                                                 </label>
                                                                 <p className="mt-1 text-sm text-gray-900">
@@ -501,6 +404,110 @@ export default function ProfilePage() {
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Education Details */}
+                        {user.details_education && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Education Details
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Highest Qualification
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.highest_qualification}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Institution
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.institution_name}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Location
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.location}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Degree
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.degree}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Grade
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_education.grade}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Previous Employment */}
+                        {user.details_previous_employment && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Previous Employment
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Company
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_previous_employment.company_name}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Designation
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_previous_employment.designation}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Start Date
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {formatDate(
+                                                user.details_previous_employment.date_start
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            End Date
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {formatDate(user.details_previous_employment.date_end)}
+                                        </p>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Location
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.details_previous_employment.location}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -521,51 +528,6 @@ export default function ProfilePage() {
                                 </div>
                             </div>
                         )}
-
-                        {/* Account Status */}
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Account Status
-                            </h2>
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-gray-700">
-                                        Status
-                                    </span>
-                                    <span
-                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                            user.blocked
-                                                ? 'bg-red-100 text-red-800'
-                                                : 'bg-green-100 text-green-800'
-                                        }`}
-                                    >
-                                        {user.blocked ? 'Blocked' : 'Active'}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-gray-700">
-                                        Email Verified
-                                    </span>
-                                    <span
-                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                            user.confirmed
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                        }`}
-                                    >
-                                        {user.confirmed ? 'Verified' : 'Pending'}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-gray-700">
-                                        Member Since
-                                    </span>
-                                    <span className="text-sm text-gray-900">
-                                        {formatDate(user.createdAt)}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
