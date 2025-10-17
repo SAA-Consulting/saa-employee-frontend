@@ -2,12 +2,128 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StrapiMedia } from '@/types';
+
+// Constants
+const STRAPI_BASE_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
+
+// Utility functions
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+};
+
+// Components
+const CollapsibleSection = ({ 
+    title, 
+    children, 
+    isOpen, 
+    onToggle 
+}: { 
+    title: string; 
+    children: React.ReactNode; 
+    isOpen: boolean; 
+    onToggle: () => void; 
+}) => {
+    return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <button
+                onClick={onToggle}
+                className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+            >
+                <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+                <svg
+                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                    />
+                </svg>
+            </button>
+            {isOpen && (
+                <div className="px-6 pb-6">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const DocumentCard = ({ document }: { document: StrapiMedia }) => {
+    const documentUrl = `${STRAPI_BASE_URL}${document.url}`;
+
+    const handleDocumentClick = () => {
+        window.open(documentUrl, '_blank');
+    };
+
+    return (
+        <div
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-colors duration-200"
+            onClick={handleDocumentClick}
+        >
+            <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                        </svg>
+                    </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{document.name}</p>
+                    <p className="text-xs text-blue-600 mt-1">Click to view</p>
+                </div>
+                <div className="flex-shrink-0">
+                    <svg
+                        className="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function ProfilePage() {
     const { user, logout, isLoading, isAuthenticated } = useAuth();
     const router = useRouter();
+    
+    // State for collapsible sections
+    const [isPFOpen, setIsPFOpen] = useState(false);
+    const [isContractOpen, setIsContractOpen] = useState(false);
+    const [isEducationOpen, setIsEducationOpen] = useState(false);
+    const [isPreviousEmploymentOpen, setIsPreviousEmploymentOpen] = useState(false);
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
@@ -53,44 +169,6 @@ export default function ProfilePage() {
         logout();
         router.push('/login');
     };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    };
-
-    const DocumentCard = ({ document }: { document: StrapiMedia }) => (
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg
-                            className="w-5 h-5 text-blue-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                        </svg>
-                    </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{document.name}</p>
-                    <p className="text-sm text-gray-500">
-                        Uploaded {formatDate(document.createdAt)}
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -294,10 +372,11 @@ export default function ProfilePage() {
 
                         {/* PF Details */}
                         {user.details_pf && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                    PF Details
-                                </h2>
+                            <CollapsibleSection
+                                title="PF Details"
+                                isOpen={isPFOpen}
+                                onToggle={() => setIsPFOpen(!isPFOpen)}
+                            >
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400">
@@ -324,21 +403,19 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                            </CollapsibleSection>
                         )}
 
                         {/* Contract Details */}
                         {user.contract_details && user.contract_details.length > 0 && (
-                            <div className="bg-white rounded-lg shadow-sm p-6">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Contract Details
-                                </h2>
+                            <CollapsibleSection
+                                title="Contract Details"
+                                isOpen={isContractOpen}
+                                onToggle={() => setIsContractOpen(!isContractOpen)}
+                            >
                                 <div className="space-y-4">
                                     {user.contract_details.map((contract, index) => (
-                                        <div
-                                            key={index}
-                                            className=""
-                                        >
+                                        <div key={index} className="">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-400">
@@ -405,15 +482,16 @@ export default function ProfilePage() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </CollapsibleSection>
                         )}
 
                         {/* Education Details */}
                         {user.details_education && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Education Details
-                                </h2>
+                            <CollapsibleSection
+                                title="Education Details"
+                                isOpen={isEducationOpen}
+                                onToggle={() => setIsEducationOpen(!isEducationOpen)}
+                            >
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400">
@@ -456,15 +534,16 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                            </CollapsibleSection>
                         )}
 
                         {/* Previous Employment */}
                         {user.details_previous_employment && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Previous Employment
-                                </h2>
+                            <CollapsibleSection
+                                title="Previous Employment"
+                                isOpen={isPreviousEmploymentOpen}
+                                onToggle={() => setIsPreviousEmploymentOpen(!isPreviousEmploymentOpen)}
+                            >
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400">
@@ -509,7 +588,7 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                            </CollapsibleSection>
                         )}
                     </div>
 
