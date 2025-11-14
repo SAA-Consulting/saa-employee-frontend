@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 },
             });
 
-
             if (!response.ok) {
                 throw new Error('Failed to fetch user profile');
             }
@@ -72,7 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (credentials: LoginRequest) => {
         setIsLoading(true);
         try {
-
             const response = await fetch(`${BACKEND_URL}/api/v1/user/login`, {
                 method: 'POST',
                 headers: {
@@ -81,10 +79,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 body: JSON.stringify(credentials),
             });
 
-
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Login failed');
+                let errorPayload: unknown;
+                try {
+                    errorPayload = await response.json();
+                } catch {
+                    // Ignore JSON parsing errors and fall back to default messaging
+                }
+
+                const serverMessage =
+                    (typeof errorPayload === 'object' &&
+                    errorPayload !== null &&
+                    'message' in errorPayload
+                        ? (errorPayload as ApiError).message
+                        : undefined) || undefined;
+
+                throw new Error(buildLoginErrorMessage(response.status, serverMessage));
             }
 
             const data: LoginResponse = await response.json();
@@ -102,7 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await fetchUserProfile(authToken);
         } catch (error) {
             console.error('Login error:', error);
-            throw error;
+            if (error instanceof Error) {
+                throw error;
+            }
+            throw new Error('Unexpected error occurred during login.');
         } finally {
             setIsLoading(false);
         }
@@ -116,6 +129,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setToken(null);
         setUser(null);
+    };
+
+    const buildLoginErrorMessage = (status: number, serverMessage?: string): string => {
+        switch (status) {
+            case 400:
+                return 'The email or password you entered is incorrect.';
+            case 401:
+                return 'Your session has expired. Please sign in again.';
+            case 403:
+                return 'You do not have permission to access this portal.';
+            case 404:
+                return 'Login service is unavailable. Please try again later.';
+            case 429:
+                return 'Too many attempts. Please wait a moment before trying again.';
+            case 500:
+            case 502:
+            case 503:
+            case 504:
+                return 'The server is having trouble right now. Please try again shortly.';
+            default:
+                return serverMessage || 'Unable to sign in. Please try again.';
+        }
     };
 
     return (

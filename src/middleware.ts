@@ -3,6 +3,16 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    const assetExtensionPattern = /\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|txt)$/i;
+
+    // Allow static assets to bypass the middleware
+    if (
+        pathname.startsWith('/_next') ||
+        pathname === '/favicon.ico' ||
+        assetExtensionPattern.test(pathname)
+    ) {
+        return NextResponse.next();
+    }
 
     // Get token from cookies or headers
     const token =
@@ -29,14 +39,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - api (API routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         */
-        '/((?!api|_next/static|_next/image|favicon.ico).*)',
-    ],
+    matcher: ['/((?!api).*)'],
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { StrapiMedia, Payslip } from '@/types';
@@ -294,10 +295,20 @@ export default function ProfilePage() {
             {/* Header */}
             <div className="bg-white shadow-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Employee Portal</h1>
-                            <p className="text-sm text-gray-600">Welcome back, {user.fullname}</p>
+                    <div className="flex justify-between items-center py-0">
+                        <div className="flex items-center gap-4 py-3">
+                            <Image
+                                src="/saa-logo.png"
+                                alt="Saaki Argus Averil logo"
+                                width={120}
+                                height={60}
+                                className="hidden lg:block h-12 w-auto"
+                                priority
+                            />
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">Employee Portal</h1>
+                                <p className="text-sm text-gray-600">Welcome back, {user.fullname}</p>
+                            </div>
                         </div>
                         <button
                             onClick={handleLogout}
