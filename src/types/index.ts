@@ -121,6 +121,7 @@ export interface StrapiUserFullType extends StrapiUserType {
     details_pf?: StrapiDetailsPF | null;
     contract_details?: (StrapiEmployeeFulltime | StrapiEmployeeClientStaffing)[] | null;
     documents?: StrapiMedia[] | null;
+    documents_invisible?: StrapiMedia[] | null;
 }
 
 // API Response Types
