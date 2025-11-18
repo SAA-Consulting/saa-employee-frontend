@@ -11,8 +11,11 @@ import { payslipsApi } from '@/utils/payslips';
 const STRAPI_BASE_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
 
 // Utility functions
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+const formatDate = (dateString?: string | null) => {
+    if (!dateString) return 'NIL';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return 'NIL';
+    return d.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
