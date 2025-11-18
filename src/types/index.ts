@@ -40,36 +40,36 @@ export interface StrapiMedia {
 // Component Types
 export interface StrapiDetailsEducation {
     id: number;
-    highest_qualification: 'School 10th' | 'School 12th' | 'Diploma' | 'UG' | 'PG';
-    institution_name: string;
-    location: string;
-    degree: string;
-    grade: string;
+    highest_qualification?: 'School 10th' | 'School 12th' | 'Diploma' | 'UG' | 'PG' | null;
+    institution_name?: string | null;
+    location?: string | null;
+    degree?: string | null;
+    grade?: string | null;
 }
 
 export interface StrapiDetailsPreviousEmployment {
     id: number;
-    company_name: string;
-    designation: string;
-    date_start: string;
-    date_end: string;
-    location: string;
+    company_name?: string | null;
+    designation?: string | null;
+    date_start?: string | null;
+    date_end?: string | null;
+    location?: string | null;
 }
 
 export interface StrapiDetailsBank {
     id: number;
-    name_account: string;
-    account_number: string;
-    ifsc_code: string;
-    branch: string;
+    name_account?: string | null;
+    account_number?: string | null;
+    ifsc_code?: string | null;
+    branch?: string | null;
     cancelled_cheque?: StrapiMedia | null;
 }
 
 export interface StrapiDetailsPF {
     id: number;
-    name_aadhar: string;
-    number_uan: string;
-    number_pf: string;
+    name_aadhar?: string | null;
+    number_uan?: string | null;
+    number_pf?: string | null;
 }
 
 export interface StrapiEmployeeFulltime {
