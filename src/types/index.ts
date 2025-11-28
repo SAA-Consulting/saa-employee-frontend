@@ -103,6 +103,7 @@ export interface StrapiUserType {
     createdAt: string;
     updatedAt: string;
     fullname: string;
+    birth_date?: string | null;
     email_personal?: string | null;
     contact?: string | null;
     contact_emergency?: string | null;
@@ -115,8 +116,8 @@ export interface StrapiUserType {
 }
 
 export interface StrapiUserFullType extends StrapiUserType {
-    details_education?: StrapiDetailsEducation | null;
-    details_previous_employment?: StrapiDetailsPreviousEmployment | null;
+    details_education?: StrapiDetailsEducation[] | null;
+    details_previous_employment?: StrapiDetailsPreviousEmployment[] | null;
     details_bank?: StrapiDetailsBank | null;
     details_pf?: StrapiDetailsPF | null;
     contract_details?: (StrapiEmployeeFulltime | StrapiEmployeeClientStaffing)[] | null;

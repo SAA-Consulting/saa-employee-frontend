@@ -352,7 +352,14 @@ export default function ProfilePage() {
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">{user.fullname}</p>
                                 </div>
-                                <div></div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Date of Birth
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.birth_date ? formatDate(user.birth_date) : 'Not provided'}
+                                    </p>
+                                </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
                                         Email
@@ -619,107 +626,119 @@ export default function ProfilePage() {
                         )}
 
                         {/* Education Details */}
-                        {user.details_education && (
+                        {user.details_education && user.details_education.length > 0 && (
                             <CollapsibleSection
                                 title="Education Details"
                                 isOpen={isEducationOpen}
                                 onToggle={() => setIsEducationOpen(!isEducationOpen)}
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Highest Qualification
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.highest_qualification}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Institution
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.institution_name}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Location
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.location}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Degree
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.degree}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Grade
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_education.grade}
-                                        </p>
-                                    </div>
+                                <div className="space-y-4">
+                                    {user.details_education?.map((education, index) => (
+                                        <div
+                                            key={education?.id || index}
+                                            className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-gray-100 rounded-lg p-4"
+                                        >
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Highest Qualification
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {education?.highest_qualification || 'Not provided'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Institution
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {education?.institution_name || 'Not provided'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Location
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {education?.location || 'Not provided'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Degree
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {education?.degree || 'Not provided'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Grade
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {education?.grade || 'Not provided'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </CollapsibleSection>
                         )}
 
                         {/* Previous Employment */}
-                        {user.details_previous_employment && (
+                        {user.details_previous_employment && user.details_previous_employment.length > 0 && (
                             <CollapsibleSection
                                 title="Previous Employment"
                                 isOpen={isPreviousEmploymentOpen}
                                 onToggle={() => setIsPreviousEmploymentOpen(!isPreviousEmploymentOpen)}
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Company
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_previous_employment.company_name}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Designation
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_previous_employment.designation}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Start Date
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {formatDate(
-                                                user.details_previous_employment.date_start
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            End Date
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {formatDate(user.details_previous_employment.date_end)}
-                                        </p>
-                                    </div>
-                                    <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-400">
-                                            Location
-                                        </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_previous_employment.location}
-                                        </p>
-                                    </div>
+                                <div className="space-y-4">
+                                    {user.details_previous_employment?.map((employment, index) => (
+                                        <div
+                                            key={employment?.id || index}
+                                            className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-gray-100 rounded-lg p-4"
+                                        >
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Company
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {employment?.company_name || 'Not provided'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Designation
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {employment?.designation || 'Not provided'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Start Date
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {employment?.date_start ? formatDate(employment.date_start) : 'Not provided'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    End Date
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {employment?.date_end ? formatDate(employment.date_end) : 'Not provided'}
+                                                </p>
+                                            </div>
+                                            <div className="sm:col-span-2">
+                                                <label className="block text-sm font-medium text-gray-400">
+                                                    Location
+                                                </label>
+                                                <p className="mt-1 text-sm text-gray-900">
+                                                    {employment?.location || 'Not provided'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </CollapsibleSection>
                         )}
