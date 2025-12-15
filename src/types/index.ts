@@ -115,6 +115,14 @@ export interface StrapiUserType {
     number_esi?: string | null;
 }
 
+export interface StrapiUserMinimal {
+    // Minimal nested user representation used for relations like
+    // `direct_reports` and `reporting_manager`.
+    id: number;
+    username: string;
+    fullname: string;
+}
+
 export interface StrapiUserFullType extends StrapiUserType {
     details_education?: StrapiDetailsEducation[] | null;
     details_previous_employment?: StrapiDetailsPreviousEmployment[] | null;
@@ -123,6 +131,8 @@ export interface StrapiUserFullType extends StrapiUserType {
     contract_details?: (StrapiEmployeeFulltime | StrapiEmployeeClientStaffing)[] | null;
     documents?: StrapiMedia[] | null;
     documents_invisible?: StrapiMedia[] | null;
+    direct_reports?: StrapiUserMinimal[] | null;
+    reporting_manager?: StrapiUserMinimal | null;
 }
 
 // API Response Types

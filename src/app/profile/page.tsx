@@ -23,16 +23,16 @@ const formatDate = (dateString?: string | null) => {
 };
 
 // Components
-const CollapsibleSection = ({ 
-    title, 
-    children, 
-    isOpen, 
-    onToggle 
-}: { 
-    title: string; 
-    children: React.ReactNode; 
-    isOpen: boolean; 
-    onToggle: () => void; 
+const CollapsibleSection = ({
+    title,
+    children,
+    isOpen,
+    onToggle,
+}: {
+    title: string;
+    children: React.ReactNode;
+    isOpen: boolean;
+    onToggle: () => void;
 }) => {
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -57,11 +57,7 @@ const CollapsibleSection = ({
                     />
                 </svg>
             </button>
-            {isOpen && (
-                <div className="px-6 pb-6">
-                    {children}
-                </div>
-            )}
+            {isOpen && <div className="px-6 pb-6">{children}</div>}
         </div>
     );
 };
@@ -120,7 +116,13 @@ const DocumentCard = ({ document }: { document: StrapiMedia }) => {
     );
 };
 
-const PayslipCard = ({ payslip, onDownload }: { payslip: Payslip; onDownload: (payslip: Payslip) => void }) => {
+const PayslipCard = ({
+    payslip,
+    onDownload,
+}: {
+    payslip: Payslip;
+    onDownload: (payslip: Payslip) => void;
+}) => {
     const formatFileSize = (bytes: number) => {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -195,13 +197,17 @@ const PayslipCard = ({ payslip, onDownload }: { payslip: Payslip; onDownload: (p
 export default function ProfilePage() {
     const { user, logout, isLoading, isAuthenticated, token } = useAuth();
     const router = useRouter();
-    
+
     // State for collapsible sections
+    const [isEmployeeOpen, setIsEmployeeOpen] = useState(true);
+    const [isContractOpen, setIsContractOpen] = useState(true);
+    const [isPersonalOpen, setIsPersonalOpen] = useState(true);
+    const [isAddressOpen, setIsAddressOpen] = useState(true);
+    const [isBankOpen, setIsBankOpen] = useState(false);
     const [isPFOpen, setIsPFOpen] = useState(false);
-    const [isContractOpen, setIsContractOpen] = useState(false);
     const [isEducationOpen, setIsEducationOpen] = useState(false);
     const [isPreviousEmploymentOpen, setIsPreviousEmploymentOpen] = useState(false);
-    
+
     // State for payslips
     const [payslips, setPayslips] = useState<Payslip[]>([]);
     const [payslipsLoading, setPayslipsLoading] = useState(false);
@@ -222,10 +228,10 @@ export default function ProfilePage() {
 
     const fetchPayslips = async () => {
         if (!token) return;
-        
+
         setPayslipsLoading(true);
         setPayslipsError(null);
-        
+
         try {
             const response = await payslipsApi.getPayslipsList(token);
             setPayslips(response.data.payslips);
@@ -239,7 +245,7 @@ export default function ProfilePage() {
 
     const handlePayslipDownload = async (payslip: Payslip) => {
         if (!token || !user) return;
-        
+
         try {
             await payslipsApi.downloadAndSavePayslip(token, {
                 filename: payslip.filename,
@@ -293,10 +299,17 @@ export default function ProfilePage() {
         router.push('/login');
     };
 
+    const employeeType =
+        user.contract_details && user.contract_details.length > 0
+            ? user.contract_details.some((c) => c.type === 'fulltime')
+                ? 'Fulltime'
+                : 'Contractual'
+            : 'Not specified';
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <div className="bg-white shadow-sm border-b border-gray-200">
+            <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-0">
                         <div className="flex items-center gap-4 py-3">
@@ -309,8 +322,12 @@ export default function ProfilePage() {
                                 priority
                             />
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Employee Portal</h1>
-                                <p className="text-sm text-gray-600">Welcome back, {user.fullname}</p>
+                                <h1 className="text-2xl font-bold text-gray-900">
+                                    Employee Portal
+                                </h1>
+                                <p className="text-sm text-gray-600">
+                                    Welcome back, {user.fullname}
+                                </p>
                             </div>
                         </div>
                         <button
@@ -338,33 +355,190 @@ export default function ProfilePage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Basic Info  */}
+                    {/* Main content */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Personal Information */}
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Personal Details
-                            </h2>
+                        {/* 1. Employee Details */}
+                        <CollapsibleSection
+                            title="Employee Details"
+                            isOpen={isEmployeeOpen}
+                            onToggle={() => setIsEmployeeOpen(!isEmployeeOpen)}
+                        >
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
-                                        Full Name
+                                        Employee Name
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">{user.fullname}</p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
-                                        Date of Birth
+                                        Employee ID
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">{user.username}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Official Email
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">{user.email}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Designation
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
-                                        {user.birth_date ? formatDate(user.birth_date) : 'Not provided'}
+                                        {user.designation || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Reporting To (Manager)
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.reporting_manager
+                                            ? `${user.reporting_manager.fullname} (${user.reporting_manager.username})`
+                                            : 'Not assigned'}
                                     </p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
-                                        Email
+                                        Date of Joining
                                     </label>
-                                    <p className="mt-1 text-sm text-gray-900">{user.email}</p>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.date_joining
+                                            ? formatDate(user.date_joining)
+                                            : 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Employee Type
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">{employeeType}</p>
+                                </div>
+                            </div>
+                        </CollapsibleSection>
+
+                        {/* 2. Contract Details */}
+                        {user.contract_details && user.contract_details.length > 0 && (
+                            <CollapsibleSection
+                                title="Contract Details"
+                                isOpen={isContractOpen}
+                                onToggle={() => setIsContractOpen(!isContractOpen)}
+                            >
+                                {user.contract_details[0].type === 'client_staffing' ? (
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full text-sm bg-white border border-gray-200 rounded-lg shadow-sm">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
+                                                        Client Name
+                                                    </th>
+                                                    <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
+                                                        Location Deployed
+                                                    </th>
+                                                    <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
+                                                        Extension No.
+                                                    </th>
+                                                    <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
+                                                        Duration
+                                                    </th>
+                                                    <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
+                                                        Start date
+                                                    </th>
+                                                    <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
+                                                        End date
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {user.contract_details.map((contract, index) =>
+                                                    contract.type === 'client_staffing' ? (
+                                                        <tr
+                                                            key={index}
+                                                            className="odd:bg-white even:bg-gray-50"
+                                                        >
+                                                            <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
+                                                                {contract.deputation_client || ''}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
+                                                                {contract.deputation_location || ''}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
+                                                                {/* Placeholder for Extension No. until backend field is defined */}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
+                                                                {contract.duration || ''}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
+                                                                {formatDate(contract.date_start)}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
+                                                                {contract.date_end
+                                                                    ? formatDate(contract.date_end)
+                                                                    : ''}
+                                                            </td>
+                                                        </tr>
+                                                    ) : null
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {user.contract_details.map((contract, index) => (
+                                            <div key={index} className="">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-400">
+                                                            Type
+                                                        </label>
+                                                        <p className="mt-1 text-sm text-gray-900 capitalize">
+                                                            {contract.type.replace('_', ' ')}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-400">
+                                                            Start Date
+                                                        </label>
+                                                        <p className="mt-1 text-sm text-gray-900">
+                                                            {formatDate(contract.date_start)}
+                                                        </p>
+                                                    </div>
+                                                    {contract.date_end && (
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-400">
+                                                                End Date
+                                                            </label>
+                                                            <p className="mt-1 text-sm text-gray-900">
+                                                                {formatDate(contract.date_end)}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CollapsibleSection>
+                        )}
+
+                        {/* 3. Personal Details */}
+                        <CollapsibleSection
+                            title="Personal Details"
+                            isOpen={isPersonalOpen}
+                            onToggle={() => setIsPersonalOpen(!isPersonalOpen)}
+                        >
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Date of Birth
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.birth_date
+                                            ? formatDate(user.birth_date)
+                                            : 'Not provided'}
+                                    </p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
@@ -372,31 +546,6 @@ export default function ProfilePage() {
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
                                         {user.email_personal || 'Not provided'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Address Information */}
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Address & Contact Details
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400">
-                                        Communication Address
-                                    </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.address_communication || 'Not provided'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400">
-                                        Permanent Address
-                                    </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.address_permanent || 'Not provided'}
                                     </p>
                                 </div>
                                 <div>
@@ -415,29 +564,6 @@ export default function ProfilePage() {
                                         {user.contact_emergency || 'Not provided'}
                                     </p>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Employment Details */}
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Employment Details
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400">
-                                        Designation
-                                    </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.designation || 'Not provided'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400">
-                                        Employee ID
-                                    </label>
-                                    <p className="mt-1 text-sm text-gray-900">{user.username}</p>
-                                </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
                                         PAN Number
@@ -454,25 +580,42 @@ export default function ProfilePage() {
                                         {user.number_esi || 'Not provided'}
                                     </p>
                                 </div>
+                            </div>
+                        </CollapsibleSection>
+
+                        {/* 4. Address & Communication Details */}
+                        <CollapsibleSection
+                            title="Address & Communication Details"
+                            isOpen={isAddressOpen}
+                            onToggle={() => setIsAddressOpen(!isAddressOpen)}
+                        >
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
-                                        Date of Joining
+                                        Communication Address
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900">
-                                        {user.date_joining
-                                            ? formatDate(user.date_joining)
-                                            : 'Not provided'}
+                                        {user.address_communication || 'Not provided'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        Permanent Address
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900">
+                                        {user.address_permanent || 'Not provided'}
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </CollapsibleSection>
 
                         {/* Bank Details */}
                         {user.details_bank && (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Bank Details
-                                </h2>
+                            <CollapsibleSection
+                                title="Bank Details"
+                                isOpen={isBankOpen}
+                                onToggle={() => setIsBankOpen(!isBankOpen)}
+                            >
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400">
@@ -507,7 +650,7 @@ export default function ProfilePage() {
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                            </CollapsibleSection>
                         )}
 
                         {/* PF Details */}
@@ -546,85 +689,6 @@ export default function ProfilePage() {
                             </CollapsibleSection>
                         )}
 
-                        {/* Contract Details */}
-                        {user.contract_details && user.contract_details.length > 0 && (
-                            <CollapsibleSection
-                                title="Contract Details"
-                                isOpen={isContractOpen}
-                                onToggle={() => setIsContractOpen(!isContractOpen)}
-                            >
-                                <div className="space-y-4">
-                                    {user.contract_details.map((contract, index) => (
-                                        <div key={index} className="">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-400">
-                                                        Type
-                                                    </label>
-                                                    <p className="mt-1 text-sm text-gray-900 capitalize">
-                                                        {contract.type.replace('_', ' ')}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-400">
-                                                        Start Date
-                                                    </label>
-                                                    <p className="mt-1 text-sm text-gray-900">
-                                                        {formatDate(contract.date_start)}
-                                                    </p>
-                                                </div>
-                                                {contract.date_end && (
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-400">
-                                                            End Date
-                                                        </label>
-                                                        <p className="mt-1 text-sm text-gray-900">
-                                                            {formatDate(contract.date_end)}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                                {contract.__component ===
-                                                    'user.employee-client-staffing' && (
-                                                    <>
-                                                        {contract.duration && (
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-400">
-                                                                    Duration
-                                                                </label>
-                                                                <p className="mt-1 text-sm text-gray-900">
-                                                                    {contract.duration}
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                        {contract.deputation_location && (
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-400">
-                                                                    Deputation Location
-                                                                </label>
-                                                                <p className="mt-1 text-sm text-gray-900">
-                                                                    {contract.deputation_location}
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                        {contract.deputation_client && (
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-400">
-                                                                    Deputation Client
-                                                                </label>
-                                                                <p className="mt-1 text-sm text-gray-900">
-                                                                    {contract.deputation_client}
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CollapsibleSection>
-                        )}
-
                         {/* Education Details */}
                         {user.details_education && user.details_education.length > 0 && (
                             <CollapsibleSection
@@ -643,7 +707,8 @@ export default function ProfilePage() {
                                                     Highest Qualification
                                                 </label>
                                                 <p className="mt-1 text-sm text-gray-900">
-                                                    {education?.highest_qualification || 'Not provided'}
+                                                    {education?.highest_qualification ||
+                                                        'Not provided'}
                                                 </p>
                                             </div>
                                             <div>
@@ -685,63 +750,74 @@ export default function ProfilePage() {
                         )}
 
                         {/* Previous Employment */}
-                        {user.details_previous_employment && user.details_previous_employment.length > 0 && (
-                            <CollapsibleSection
-                                title="Previous Employment"
-                                isOpen={isPreviousEmploymentOpen}
-                                onToggle={() => setIsPreviousEmploymentOpen(!isPreviousEmploymentOpen)}
-                            >
-                                <div className="space-y-4">
-                                    {user.details_previous_employment?.map((employment, index) => (
-                                        <div
-                                            key={employment?.id || index}
-                                            className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-gray-100 rounded-lg p-4"
-                                        >
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400">
-                                                    Company
-                                                </label>
-                                                <p className="mt-1 text-sm text-gray-900">
-                                                    {employment?.company_name || 'Not provided'}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400">
-                                                    Designation
-                                                </label>
-                                                <p className="mt-1 text-sm text-gray-900">
-                                                    {employment?.designation || 'Not provided'}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400">
-                                                    Start Date
-                                                </label>
-                                                <p className="mt-1 text-sm text-gray-900">
-                                                    {employment?.date_start ? formatDate(employment.date_start) : 'Not provided'}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400">
-                                                    End Date
-                                                </label>
-                                                <p className="mt-1 text-sm text-gray-900">
-                                                    {employment?.date_end ? formatDate(employment.date_end) : 'Not provided'}
-                                                </p>
-                                            </div>
-                                            <div className="sm:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-400">
-                                                    Location
-                                                </label>
-                                                <p className="mt-1 text-sm text-gray-900">
-                                                    {employment?.location || 'Not provided'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CollapsibleSection>
-                        )}
+                        {user.details_previous_employment &&
+                            user.details_previous_employment.length > 0 && (
+                                <CollapsibleSection
+                                    title="Previous Employment"
+                                    isOpen={isPreviousEmploymentOpen}
+                                    onToggle={() =>
+                                        setIsPreviousEmploymentOpen(!isPreviousEmploymentOpen)
+                                    }
+                                >
+                                    <div className="space-y-4">
+                                        {user.details_previous_employment?.map(
+                                            (employment, index) => (
+                                                <div
+                                                    key={employment?.id || index}
+                                                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-gray-100 rounded-lg p-4"
+                                                >
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-400">
+                                                            Company
+                                                        </label>
+                                                        <p className="mt-1 text-sm text-gray-900">
+                                                            {employment?.company_name ||
+                                                                'Not provided'}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-400">
+                                                            Designation
+                                                        </label>
+                                                        <p className="mt-1 text-sm text-gray-900">
+                                                            {employment?.designation ||
+                                                                'Not provided'}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-400">
+                                                            Start Date
+                                                        </label>
+                                                        <p className="mt-1 text-sm text-gray-900">
+                                                            {employment?.date_start
+                                                                ? formatDate(employment.date_start)
+                                                                : 'Not provided'}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-400">
+                                                            End Date
+                                                        </label>
+                                                        <p className="mt-1 text-sm text-gray-900">
+                                                            {employment?.date_end
+                                                                ? formatDate(employment.date_end)
+                                                                : 'Not provided'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="sm:col-span-2">
+                                                        <label className="block text-sm font-medium text-gray-400">
+                                                            Location
+                                                        </label>
+                                                        <p className="mt-1 text-sm text-gray-900">
+                                                            {employment?.location || 'Not provided'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                </CollapsibleSection>
+                            )}
                     </div>
 
                     {/* Sidebar */}
@@ -752,7 +828,9 @@ export default function ProfilePage() {
                                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
                                     Documents
                                 </h2>
-                                <div className={`space-y-3 ${user.documents.length > 6 ? 'max-h-96 overflow-y-auto pr-2' : ''}`}>
+                                <div
+                                    className={`space-y-3 ${user.documents.length > 6 ? 'max-h-96 overflow-y-auto pr-2' : ''}`}
+                                >
                                     {user.documents.map((document) => (
                                         <DocumentCard key={document.id} document={document} />
                                     ))}
@@ -762,9 +840,7 @@ export default function ProfilePage() {
 
                         {/* Payslips */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Payslips
-                            </h2>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Payslips</h2>
                             {payslipsLoading ? (
                                 <div className="flex items-center justify-center py-8">
                                     <svg
@@ -787,7 +863,9 @@ export default function ProfilePage() {
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                         ></path>
                                     </svg>
-                                    <span className="ml-2 text-sm text-gray-600">Loading payslips...</span>
+                                    <span className="ml-2 text-sm text-gray-600">
+                                        Loading payslips...
+                                    </span>
                                 </div>
                             ) : payslipsError ? (
                                 <div className="text-center py-8">
@@ -800,11 +878,13 @@ export default function ProfilePage() {
                                     </button>
                                 </div>
                             ) : payslips.length > 0 ? (
-                                <div className={`space-y-3 ${payslips.length > 6 ? 'max-h-96 overflow-y-auto pr-2' : ''}`}>
+                                <div
+                                    className={`space-y-3 ${payslips.length > 6 ? 'max-h-96 overflow-y-auto pr-2' : ''}`}
+                                >
                                     {payslips.map((payslip) => (
-                                        <PayslipCard 
-                                            key={`${payslip.year}-${payslip.month_id}`} 
-                                            payslip={payslip} 
+                                        <PayslipCard
+                                            key={`${payslip.year}-${payslip.month_id}`}
+                                            payslip={payslip}
                                             onDownload={handlePayslipDownload}
                                         />
                                     ))}
@@ -828,8 +908,48 @@ export default function ProfilePage() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Direct Reports */}
+                        {user.direct_reports && user.direct_reports.length > 0 && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Direct Reports
+                                </h2>
+                                <div
+                                    className={`space-y-2 ${user.direct_reports.length > 8 ? 'max-h-72 overflow-y-auto pr-2' : ''}`}
+                                >
+                                    {user.direct_reports.map((report) => (
+                                        <div
+                                            key={report.id}
+                                            className="flex items-center justify-between py-1"
+                                        >
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900">
+                                                    {report.fullname}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {report.username}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
+            </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+                <p className="mt-4 text-xs text-gray-500 text-center">
+                    Contact the admin / mail to{' '}
+                    <a
+                        href="mailto:jobs@saaconsulting.co.in"
+                        className="text-blue-600 hover:underline"
+                    >
+                        jobs@saaconsulting.co.in
+                    </a>{' '}
+                    for any changes in personal details.
+                </p>
             </div>
         </div>
     );
