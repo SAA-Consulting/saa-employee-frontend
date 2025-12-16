@@ -420,13 +420,14 @@ export default function ProfilePage() {
                         </CollapsibleSection>
 
                         {/* 2. Contract Details */}
-                        {user.contract_details && user.contract_details.length > 0 && (
-                            <CollapsibleSection
-                                title="Contract Details"
-                                isOpen={isContractOpen}
-                                onToggle={() => setIsContractOpen(!isContractOpen)}
-                            >
-                                {user.contract_details[0].type === 'client_staffing' ? (
+                        {user.contract_details &&
+                            user.contract_details.length > 0 &&
+                            user.contract_details[0].type === 'client_staffing' && (
+                                <CollapsibleSection
+                                    title="Contract Details"
+                                    isOpen={isContractOpen}
+                                    onToggle={() => setIsContractOpen(!isContractOpen)}
+                                >
                                     <div className="overflow-x-auto">
                                         <table className="min-w-full text-sm bg-white border border-gray-200 rounded-lg shadow-sm">
                                             <thead className="bg-gray-50">
@@ -484,44 +485,8 @@ export default function ProfilePage() {
                                             </tbody>
                                         </table>
                                     </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {user.contract_details.map((contract, index) => (
-                                            <div key={index} className="">
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-400">
-                                                            Type
-                                                        </label>
-                                                        <p className="mt-1 text-sm text-gray-900 capitalize">
-                                                            {contract.type.replace('_', ' ')}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-400">
-                                                            Start Date
-                                                        </label>
-                                                        <p className="mt-1 text-sm text-gray-900">
-                                                            {formatDate(contract.date_start)}
-                                                        </p>
-                                                    </div>
-                                                    {contract.date_end && (
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-400">
-                                                                End Date
-                                                            </label>
-                                                            <p className="mt-1 text-sm text-gray-900">
-                                                                {formatDate(contract.date_end)}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </CollapsibleSection>
-                        )}
+                                </CollapsibleSection>
+                            )}
 
                         {/* 3. Personal Details */}
                         <CollapsibleSection
