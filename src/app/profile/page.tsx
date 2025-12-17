@@ -433,9 +433,6 @@ export default function ProfilePage() {
                                             <thead className="bg-gray-50">
                                                 <tr>
                                                     <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
-                                                        Client Name
-                                                    </th>
-                                                    <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
                                                         Location Deployed
                                                     </th>
                                                     <th className="px-4 py-2 text-center align-middle font-semibold text-gray-700 border-b border-gray-200">
@@ -460,13 +457,10 @@ export default function ProfilePage() {
                                                             className="odd:bg-white even:bg-gray-50"
                                                         >
                                                             <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
-                                                                {contract.deputation_client || ''}
-                                                            </td>
-                                                            <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
                                                                 {contract.deputation_location || ''}
                                                             </td>
                                                             <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
-                                                                {/* Placeholder for Extension No. until backend field is defined */}
+                                                                {contract.extension_number || ''}
                                                             </td>
                                                             <td className="px-4 py-2 text-gray-900 border-b border-gray-100 text-center">
                                                                 {contract.duration || ''}

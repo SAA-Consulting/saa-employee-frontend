@@ -90,6 +90,7 @@ export interface StrapiEmployeeClientStaffing {
     deputation_location?: string | null;
     deputation_client?: string | null;
     extension_details?: StrapiMedia[] | null;
+    extension_number?: number;
 }
 
 // Main User Types
