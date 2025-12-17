@@ -114,6 +114,7 @@ export interface StrapiUserType {
     designation?: string | null;
     number_pan?: string | null;
     number_esi?: string | null;
+    number_aadhaar?: string | null;
 }
 
 export interface StrapiUserMinimal {

@@ -116,6 +116,75 @@ const DocumentCard = ({ document }: { document: StrapiMedia }) => {
     );
 };
 
+const RedactedField = ({
+    value,
+    className,
+    blurPercent = 50,
+}: {
+    value?: string | null;
+    className?: string;
+    blurPercent?: number;
+}) => {
+    const [revealed, setRevealed] = useState(false);
+    const blurStrength = Math.max(0, Math.min(100, blurPercent));
+    const blurValue = `blur(${(blurStrength / 100) * 8}px)`;
+
+    if (!value) {
+        return (
+            <span className={`mt-1 text-sm text-gray-900 ${className || ''}`}>
+                Not provided
+            </span>
+        );
+    }
+
+    return (
+        <button
+            type="button"
+            onClick={() => setRevealed((prev) => !prev)}
+            className={`group relative inline-flex w-full items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-left transition hover:border-blue-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 ${className || ''}`}
+        >
+            <span
+                className={`text-sm font-medium transition ${
+                    revealed ? 'text-gray-900' : 'text-gray-900 select-none'
+                }`}
+                style={revealed ? undefined : { filter: blurValue }}
+            >
+                {value}
+            </span>
+            <span className="pointer-events-none ml-3 flex items-center text-gray-400 transition group-hover:text-gray-600">
+                {revealed ? (
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M4.5 4.5l15 15M9.88 9.88a3 3 0 104.24 4.24M6.68 6.73A10.45 10.45 0 0112 5c7 0 10.5 7 10.5 7a17.5 17.5 0 01-3.25 3.85M14.12 14.12l5.16 5.16"
+                        />
+                    </svg>
+                ) : (
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M2.25 12s3.75-7.5 9.75-7.5S21.75 12 21.75 12 18 19.5 12 19.5 2.25 12 2.25 12z"
+                        />
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M12 14.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"
+                        />
+                    </svg>
+                )}
+            </span>
+            {!revealed && (
+                <span className="pointer-events-none absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-0 transition group-hover:opacity-100" />
+            )}
+        </button>
+    );
+};
+
 const PayslipCard = ({
     payslip,
     onDownload,
@@ -527,17 +596,13 @@ export default function ProfilePage() {
                                     <label className="block text-sm font-medium text-gray-400">
                                         PAN Number
                                     </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.number_pan || 'Not provided'}
-                                    </p>
+                                    <RedactedField className="mt-1" value={user.number_pan} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
-                                        ESI Number
+                                        Aadhaar Number
                                     </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.number_esi || 'Not provided'}
-                                    </p>
+                                    <RedactedField className="mt-1" value={user.number_aadhaar} />
                                 </div>
                             </div>
                         </CollapsibleSection>
@@ -588,9 +653,10 @@ export default function ProfilePage() {
                                         <label className="block text-sm font-medium text-gray-400">
                                             Account Number
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_bank.account_number}
-                                        </p>
+                                        <RedactedField
+                                            className="mt-1"
+                                            value={user.details_bank.account_number}
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400">
@@ -622,7 +688,7 @@ export default function ProfilePage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400">
-                                            Aadhar Name
+                                            Name (in Aadhaar)
                                         </label>
                                         <p className="mt-1 text-sm text-gray-900">
                                             {user.details_pf.name_aadhar}
@@ -632,17 +698,25 @@ export default function ProfilePage() {
                                         <label className="block text-sm font-medium text-gray-400">
                                             UAN Number
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_pf.number_uan}
-                                        </p>
+                                        <RedactedField
+                                            className="mt-1"
+                                            value={user.details_pf.number_uan}
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-400">
                                             PF Number
                                         </label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {user.details_pf.number_pf}
-                                        </p>
+                                        <RedactedField
+                                            className="mt-1"
+                                            value={user.details_pf.number_pf}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            ESI Number
+                                        </label>
+                                        <RedactedField className="mt-1" value={user.number_esi} />
                                     </div>
                                 </div>
                             </CollapsibleSection>
