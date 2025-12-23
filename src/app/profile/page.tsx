@@ -131,9 +131,7 @@ const RedactedField = ({
 
     if (!value) {
         return (
-            <span className={`mt-1 text-sm text-gray-900 ${className || ''}`}>
-                Not provided
-            </span>
+            <span className={`mt-1 text-sm text-gray-900 ${className || ''}`}>Not provided</span>
         );
     }
 
@@ -459,16 +457,18 @@ export default function ProfilePage() {
                                         {user.designation || 'Not provided'}
                                     </p>
                                 </div>
-                                <div className="sm:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-400">
-                                        Reporting To (Manager)
-                                    </label>
-                                    <p className="mt-1 text-sm text-gray-900">
-                                        {user.reporting_manager
-                                            ? `${user.reporting_manager.fullname} (${user.reporting_manager.username})`
-                                            : 'Not assigned'}
-                                    </p>
-                                </div>
+                                {employeeType !== 'Contractual' && (
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-400">
+                                            Reporting To (Manager)
+                                        </label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {user.reporting_manager
+                                                ? `${user.reporting_manager.fullname} (${user.reporting_manager.username})`
+                                                : 'Not assigned'}
+                                        </p>
+                                    </div>
+                                )}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400">
                                         Date of Joining
@@ -681,7 +681,7 @@ export default function ProfilePage() {
                         {/* PF Details */}
                         {user.details_pf && (
                             <CollapsibleSection
-                                title="PF Details"
+                                title="PF & ESI Details"
                                 isOpen={isPFOpen}
                                 onToggle={() => setIsPFOpen(!isPFOpen)}
                             >
@@ -716,7 +716,16 @@ export default function ProfilePage() {
                                         <label className="block text-sm font-medium text-gray-400">
                                             ESI Number
                                         </label>
-                                        <RedactedField className="mt-1" value={user.number_esi} />
+                                        {user.number_esi ? (
+                                            <RedactedField
+                                                className="mt-1"
+                                                value={user.number_esi}
+                                            />
+                                        ) : (
+                                            <p className="mt-1 text-sm text-gray-900">
+                                                Not Applicable
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </CollapsibleSection>
@@ -946,7 +955,7 @@ export default function ProfilePage() {
                         {user.direct_reports && user.direct_reports.length > 0 && (
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Direct Reports
+                                    Team Members
                                 </h2>
                                 <div
                                     className={`space-y-2 ${user.direct_reports.length > 8 ? 'max-h-72 overflow-y-auto pr-2' : ''}`}
