@@ -158,6 +158,21 @@ export interface MeResponse {
     message: string;
 }
 
+export interface ChangePasswordRequest {
+    currentPassword: string;
+    password: string;
+    passwordConfirmation: string;
+}
+
+export interface ChangePasswordResponse {
+    success: boolean;
+    data: {
+        jwt: string;
+        user: StrapiUserType;
+    };
+    message: string;
+}
+
 export interface ApiError {
     success: false;
     message: string;

@@ -4,8 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { StrapiMedia, Payslip } from '@/types';
+import { StrapiMedia, Payslip, ChangePasswordRequest } from '@/types';
 import { payslipsApi } from '@/utils/payslips';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:5000';
 
 // Constants
 const STRAPI_BASE_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://127.0.0.1:1337';
@@ -261,9 +263,427 @@ const PayslipCard = ({
     );
 };
 
+const ChangePasswordModal = ({
+    isOpen,
+    onClose,
+    token,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    token: string;
+}) => {
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<{
+        currentPassword?: string;
+        newPassword?: string;
+        confirmPassword?: string;
+    }>({});
+    const [success, setSuccess] = useState(false);
+
+    const resetForm = () => {
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setError(null);
+        setFieldErrors({});
+        setSuccess(false);
+    };
+
+    const handleClose = () => {
+        resetForm();
+        onClose();
+    };
+
+    // Clear field-level error when user starts typing in that field
+    const handleCurrentPasswordChange = (val: string) => {
+        setCurrentPassword(val);
+        if (fieldErrors.currentPassword) {
+            setFieldErrors((prev) => ({ ...prev, currentPassword: undefined }));
+        }
+        if (error) setError(null);
+    };
+
+    const handleNewPasswordChange = (val: string) => {
+        setNewPassword(val);
+        if (fieldErrors.newPassword) {
+            setFieldErrors((prev) => ({ ...prev, newPassword: undefined }));
+        }
+        if (error) setError(null);
+    };
+
+    const handleConfirmPasswordChange = (val: string) => {
+        setConfirmPassword(val);
+        if (fieldErrors.confirmPassword) {
+            setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+        }
+        if (error) setError(null);
+    };
+
+    /** Extract a human-readable message from the backend error response */
+    const parseServerError = (data: Record<string, unknown>): string => {
+        // Shape 1 — Strapi error forwarded by the Python backend's httpx handler:
+        // { error: { error: { message: "..." } } }
+        const nestedMsg =
+            (data?.error as Record<string, unknown>)?.error &&
+            typeof (data.error as Record<string, unknown>).error === 'object' &&
+            ((data.error as Record<string, unknown>).error as Record<string, unknown>)?.message;
+        if (typeof nestedMsg === 'string') return nestedMsg;
+
+        // Shape 2 — { error: { message: "..." } }
+        const errObj = data?.error as Record<string, unknown> | undefined;
+        if (typeof errObj?.message === 'string') return errObj.message;
+
+        // Shape 3 — { message: "..." }
+        if (typeof data?.message === 'string' && data.message !== '') return data.message;
+
+        // Shape 4 — { error: "plain string" }
+        if (typeof data?.error === 'string') return data.error;
+
+        return 'Failed to change password. Please try again.';
+    };
+
+    /**
+     * Map well-known Strapi / backend messages to friendly per-field errors
+     * so the user sees the hint right next to the relevant input.
+     */
+    const mapServerErrorToField = (msg: string): boolean => {
+        const lower = msg.toLowerCase();
+
+        if (lower.includes('current password is invalid') || lower.includes('current password')) {
+            setFieldErrors({ currentPassword: 'The current password you entered is incorrect.' });
+            return true;
+        }
+        if (lower.includes('passwords do not match') || lower.includes('do not match')) {
+            setFieldErrors({ confirmPassword: 'Passwords do not match.' });
+            return true;
+        }
+        if (
+            lower.includes('must be different') ||
+            lower.includes('new password must be different')
+        ) {
+            setFieldErrors({
+                newPassword: 'New password must be different from your current password.',
+            });
+            return true;
+        }
+        return false;
+    };
+
+    const validate = (): boolean => {
+        const errors: typeof fieldErrors = {};
+
+        if (!currentPassword) {
+            errors.currentPassword = 'Please enter your current password.';
+        }
+
+        if (!newPassword) {
+            errors.newPassword = 'Please enter a new password.';
+        } else if (newPassword.length < 6) {
+            errors.newPassword = 'Password must be at least 6 characters.';
+        } else if (currentPassword === newPassword) {
+            errors.newPassword = 'New password must be different from your current password.';
+        }
+
+        if (!confirmPassword) {
+            errors.confirmPassword = 'Please confirm your new password.';
+        } else if (newPassword !== confirmPassword) {
+            errors.confirmPassword = 'Passwords do not match.';
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setFieldErrors({});
+
+        if (!validate()) return;
+
+        setIsSubmitting(true);
+
+        try {
+            const body: ChangePasswordRequest = {
+                currentPassword,
+                password: newPassword,
+                passwordConfirmation: confirmPassword,
+            };
+
+            const response = await fetch(`${BACKEND_URL}/api/v1/user/change-password`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) {
+                let serverMsg = 'Failed to change password. Please try again.';
+                try {
+                    const data = await response.json();
+                    serverMsg = parseServerError(data);
+                } catch {
+                    // ignore JSON parse errors
+                }
+
+                // Try to show as a field-level error; fall back to banner
+                if (!mapServerErrorToField(serverMsg)) {
+                    setError(serverMsg);
+                }
+                return;
+            }
+
+            setSuccess(true);
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch {
+            setError('Unable to reach the server. Please check your connection and try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    const inputClass = (hasError?: string) =>
+        `w-full px-3 py-2 border rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 transition-colors ${
+            hasError
+                ? 'border-red-400 focus:ring-red-300 focus:border-red-400 bg-red-50/40'
+                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+        }`;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+
+            {/* Modal */}
+            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                    <h2 className="text-lg font-semibold text-gray-900">Update Password</h2>
+                    <button
+                        onClick={handleClose}
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                {success ? (
+                    <div className="text-center py-6">
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg
+                                className="w-6 h-6 text-green-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                />
+                            </svg>
+                        </div>
+                        <p className="text-sm text-gray-700 font-medium">
+                            Password updated successfully!
+                        </p>
+                        <button
+                            onClick={handleClose}
+                            className="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            Close
+                        </button>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Banner error for generic / network errors */}
+                        {error && (
+                            <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+                                <svg
+                                    className="w-4 h-4 mt-0.5 flex-shrink-0"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Current Password
+                            </label>
+                            <input
+                                type="password"
+                                value={currentPassword}
+                                onChange={(e) => handleCurrentPasswordChange(e.target.value)}
+                                required
+                                className={inputClass(fieldErrors.currentPassword)}
+                                placeholder="Enter current password"
+                            />
+                            {fieldErrors.currentPassword && (
+                                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                                    <svg
+                                        className="w-3.5 h-3.5 flex-shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    {fieldErrors.currentPassword}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                New Password
+                            </label>
+                            <input
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => handleNewPasswordChange(e.target.value)}
+                                required
+                                className={inputClass(fieldErrors.newPassword)}
+                                placeholder="Enter new password"
+                            />
+                            {fieldErrors.newPassword && (
+                                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                                    <svg
+                                        className="w-3.5 h-3.5 flex-shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    {fieldErrors.newPassword}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Confirm New Password
+                            </label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                                required
+                                className={inputClass(fieldErrors.confirmPassword)}
+                                placeholder="Confirm new password"
+                            />
+                            {fieldErrors.confirmPassword && (
+                                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                                    <svg
+                                        className="w-3.5 h-3.5 flex-shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    {fieldErrors.confirmPassword}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={handleClose}
+                                className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? (
+                                    <span className="flex items-center">
+                                        <svg
+                                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            />
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                            />
+                                        </svg>
+                                        Updating...
+                                    </span>
+                                ) : (
+                                    'Update Password'
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </div>
+        </div>
+    );
+};
+
 export default function ProfilePage() {
     const { user, logout, isLoading, isAuthenticated, token } = useAuth();
     const router = useRouter();
+
+    // State for change password modal
+    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
     // State for collapsible sections
     const [isEmployeeOpen, setIsEmployeeOpen] = useState(true);
@@ -397,25 +817,46 @@ export default function ProfilePage() {
                                 </p>
                             </div>
                         </div>
-                        <button
-                            onClick={handleLogout}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            <svg
-                                className="w-4 h-4 mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setIsChangePasswordOpen(true)}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                                />
-                            </svg>
-                            Sign Out
-                        </button>
+                                <svg
+                                    className="w-4 h-4 mr-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                                    />
+                                </svg>
+                                Update Password
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                                <svg
+                                    className="w-4 h-4 mr-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                    />
+                                </svg>
+                                Sign Out
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -993,6 +1434,15 @@ export default function ProfilePage() {
                     for any changes in personal details.
                 </p>
             </div>
+
+            {/* Change Password Modal */}
+            {token && (
+                <ChangePasswordModal
+                    isOpen={isChangePasswordOpen}
+                    onClose={() => setIsChangePasswordOpen(false)}
+                    token={token}
+                />
+            )}
         </div>
     );
 }
